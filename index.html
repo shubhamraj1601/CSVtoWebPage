@@ -6,12 +6,13 @@
     <title>CSV Viewer with HTML, CSS & JavaScript</title>
     <!-- <link rel="stylesheet" type="text/css" href="css/style.css" /> -->
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.2.0/papaparse.min.js"></script>
-    <!-- <script src="https://app.awesome-table.com/AwesomeTableInclude.js"></script> -->
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
   </head>
   <body>
-    <input type="file" id="csvFileInput" style="padding-bottom: 15px" />
+    <input type="text" id="search" placeholder="Search"></input>
+    <button type="button" id="submit" onclick="search_this()">Submit</button>
     <table id="csvRoot"></table>
-    <!-- <div data-type="AwesomeTableView" data-hide-filters="false" data-filters="" data-viewID="-MfaaJk0qFT2UbdENSv1"></div> -->
   </body>
 </html>
 
@@ -85,16 +86,48 @@
   }
 
   const tableRoot = document.querySelector("#csvRoot");
-  const csvFileInput = document.querySelector("#csvFileInput");
   const tableCsv = new TableCsv(tableRoot);
 
-  csvFileInput.addEventListener("change", (e) => {
-    Papa.parse(csvFileInput.files[0], {
-      delimiter: ",",
-      skipEmptyLines: true,
-      complete: (results) => {
-        tableCsv.update(results.data.slice(1), results.data[0]);
-      },
-    });
+
+  var getFileBlob = function (url, cb) {
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", url);
+        xhr.responseType = "blob";
+        xhr.addEventListener('load', function() {
+            cb(xhr.response);
+        });
+        xhr.send();
+};
+
+var blobToFile = function (blob, name) {
+        blob.lastModifiedDate = new Date();
+        blob.name = name;
+        return blob;
+};
+
+var getFileObject = function(filePathOrUrl, cb) {
+       getFileBlob(filePathOrUrl, function (blob) {
+          cb(blobToFile(blob, 'file.csv'));
+       });
+};
+
+getFileObject('FGExport.csv', function (fileObject) {
+     Papa.parse(fileObject, {
+       delimiter: ",",
+       skipEmptyLines: true,
+       complete: (results) => {
+         tableCsv.update(results.data.slice(1), results.data[0]);
+       },
+     });
+});
+
+function search_this(){
+  var table = $('#tableCsv').DataTable().api();
+  $('#search').on( 'keyup', function () {
+    table.search( this.value ).draw();
   });
+}
+
+   
+
 </script>
