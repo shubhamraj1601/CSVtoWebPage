@@ -1,19 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CSV Viewer with HTML, CSS & JavaScript</title>
-    <!-- <link rel="stylesheet" type="text/css" href="css/style.css" /> -->
-    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.2.0/papaparse.min.js"></script>
-    <script type="text/javascript" src="https://code.jquery.com/jquery-3.5.1.js"></script>
-    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
-  </head>
-  <body>
-    <input type="text" id="search" placeholder="Search"></input>
-    <button type="button" id="submit" onclick="search_this()">Submit</button>
-    <table id="csvRoot"></table>
-  </body>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CSV Viewer with HTML, CSS & JavaScript</title>
+  <!-- <link rel="stylesheet" type="text/css" href="css/style.css" /> -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.2.0/papaparse.min.js"></script>
+  <script type="text/javascript" src="https://code.jquery.com/jquery-3.5.1.js"></script>
+  <script type="text/javascript" charset="utf8"
+    src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+</head>
+
+<body>
+  <input type="text" id="search" placeholder="Search"></input>
+  <button type="button" id="submit" onclick="search_this()">Submit</button>
+  <table id="csvRoot"></table>
+</body>
+
 </html>
 
 <script>
@@ -90,44 +94,55 @@
 
 
   var getFileBlob = function (url, cb) {
-        var xhr = new XMLHttpRequest();
-        xhr.open("GET", url);
-        xhr.responseType = "blob";
-        xhr.addEventListener('load', function() {
-            cb(xhr.response);
-        });
-        xhr.send();
-};
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", url);
+    xhr.responseType = "blob";
+    xhr.addEventListener('load', function () {
+      cb(xhr.response);
+    });
+    xhr.send();
+  };
 
-var blobToFile = function (blob, name) {
-        blob.lastModifiedDate = new Date();
-        blob.name = name;
-        return blob;
-};
+  var blobToFile = function (blob, name) {
+    blob.lastModifiedDate = new Date();
+    blob.name = name;
+    return blob;
+  };
 
-var getFileObject = function(filePathOrUrl, cb) {
-       getFileBlob(filePathOrUrl, function (blob) {
-          cb(blobToFile(blob, 'file.csv'));
-       });
-};
+  var getFileObject = function (filePathOrUrl, cb) {
+    getFileBlob(filePathOrUrl, function (blob) {
+      cb(blobToFile(blob, 'file.csv'));
+    });
+  };
 
-getFileObject('FGExport.csv', function (fileObject) {
-     Papa.parse(fileObject, {
-       delimiter: ",",
-       skipEmptyLines: true,
-       complete: (results) => {
-         tableCsv.update(results.data.slice(1), results.data[0]);
-       },
-     });
-});
-
-function search_this(){
-  var table = $('#tableCsv').DataTable().api();
-  $('#search').on( 'keyup', function () {
-    table.search( this.value ).draw();
+  getFileObject('FGExport.csv', function (fileObject) {
+    Papa.parse(fileObject, {
+      delimiter: ",",
+      skipEmptyLines: true,
+      complete: (results) => {
+        tableCsv.update(results.data.slice(1), results.data[0]);
+      },
+    });
   });
-}
 
-   
+  function search_this() {
+    var table = $('#csvRoot').DataTable({
+      "dom": 'lrtip',
+      "paging": true
+    });
+    var text = $('#search').val();
+    text = text.split("|");
+    regex=""
+    //Encapsulate your words inside regex groups
+    text = text.map(function (n) {
+      regex+="(?=.*\\b"+n+ "\\b)|";
+    });
+
+    regex = regex.substring(0, regex.length - 1);
+    console.log(regex);
+    table.search(regex, true, false, true).draw();
+  }
+
+
 
 </script>
